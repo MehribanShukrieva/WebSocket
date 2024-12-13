@@ -68,6 +68,15 @@ int main() {
 		WSACleanup();
 		return 1;
 	}
+	
+	//listen
+	if (listen(listenSocket, SOMAXCONN) == SOCKET_ERROR) {
+		cout << "listen failed" << endl;
+		closesocket(listenSocket);
+		WSACleanup();
+		return 1;
+	}
+	
 	WSACleanup();
 	return 0;
 }
