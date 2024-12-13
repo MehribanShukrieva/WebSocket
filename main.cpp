@@ -1,5 +1,7 @@
 #include <iostream>
 #include <WinSock2.h>
+#include <WS2tcpip.h>
+#include <tchar.h>
 
 using namespace std;
 
@@ -47,7 +49,25 @@ int main() {
 
 	//create address structure
 	sockaddr_in serveraddr;
+	serveraddr.sin_family = AF_INET;
+	serveraddr.sin_port = htons(12345);
 
+	//convert the ipaddress to binary format 
+	//(0.0.0.0) put inside the sin_family in binary form
+	if (InetPton(AF_INET, _T("0.0.0.0"), &serveraddr.sin_addr) != 1) {
+		cout << "setting address structure failed" << endl;
+		closesocket(listenSocket);
+		WSACleanup();
+		return 1;
+	}
+
+	//bind
+	if (bind(listenSocket, reinterpret_cast<sockaddr*>(&serveraddr), sizeof(serveraddr)) == SOCKET_ERROR) {
+		cout << "bind failed" << endl;
+		closesocket(listenSocket);
+		WSACleanup();
+		return 1;
+	}
 	WSACleanup();
 	return 0;
 }
