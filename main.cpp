@@ -45,6 +45,9 @@ int main() {
 		return 1;
 	}
 
+	//create address structure
+	sockaddr_in serveraddr;
+
 	WSACleanup();
 	return 0;
 }
