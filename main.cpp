@@ -121,6 +121,7 @@ int main() {
 
 		clients.push_back(clientSocket);
 		thread t1(InteractWithClient, clientSocket, std::ref(clients));
+		t1.detach();
 	}
 
 	closesocket(listenSocket);
