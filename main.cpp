@@ -3,6 +3,7 @@
 #include <WS2tcpip.h>
 #include <tchar.h>
 #include <thread>
+#include <vector>
 
 using namespace std;
 
@@ -34,7 +35,7 @@ bool Initialize() {
 	return WSAStartup(MAKEWORD(2,2), &data) == 0;
 }
 
-void InteractWithClient(SOCKET clientSocket) {
+void InteractWithClient(SOCKET clientSocket, vector<SOCKET>& clients) {
 	//send/recv client
 	cout << "client connected" << endl;
 	char buffer[4096];
@@ -49,6 +50,17 @@ void InteractWithClient(SOCKET clientSocket) {
 		string message(buffer, bytesrecvd);
 
 		cout << "message from client: " << message << endl;
+
+		for (auto client : clients) {
+			if (client != clientSocket) {
+				send(client, message.c_str(), message.length(), 0);
+			}
+		}
+	}
+
+	auto it = find(clients.begin(), clients.end(), clientSocket);
+	if (it != clients.end()) {
+		clients.erase(it);
 	}
 
 	closesocket(clientSocket);
@@ -96,7 +108,9 @@ int main() {
 		WSACleanup();
 		return 1;
 	}
+
 	cout << "server has started listening on port: " << port << endl;
+	vector<SOCKET> clients;
 
 	while (1) {
 		//accept
@@ -105,7 +119,8 @@ int main() {
 			cout << "invalid client socket" << endl;
 		}
 
-		thread t1(InteractWithClient, clientSocket);
+		clients.push_back(clientSocket);
+		thread t1(InteractWithClient, clientSocket, std::ref(clients));
 	}
 
 	closesocket(listenSocket);
